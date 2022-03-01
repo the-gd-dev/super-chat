@@ -1,0 +1,67 @@
+<%- include('./include/header.ejs') %>  
+</head>
+    <%- include('./include/navbar.ejs') %>  
+    <main>
+        <div class="container">
+            <div class="row">
+                <div class="col-3 bg-light p-0">
+                    <ul class="list-unstyled p-0">
+                        <li class="user active">
+                            <div class="d-flex flex-rows align-items-center">
+                                <div class="profile-pic"><img src="https://randomuser.me/api/portraits/men/88.jpg" ></div>
+                                <div class="d-flex flex-column ms-2"> 
+                                    <div class="name">
+                                       <strong> User Name</strong>
+                                    </div>
+                                    <div class="last-message">hiii</div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="user">
+                            <div class="d-flex flex-rows align-items-center">
+                                <div class="profile-pic"><img src="https://randomuser.me/api/portraits/men/88.jpg" ></div>
+                                <div class="d-flex flex-column ms-2"> 
+                                    <div class="name">
+                                       <strong> User Name</strong>
+                                    </div>
+                                    <div class="last-message">hiii</div>
+                                </div>
+                            </div>
+                        </li>
+                        
+                    </ul>
+                </div>
+                <div class="col-9">
+                    <div class="chatbox">
+                        <div class="d-flex justify-content-end">
+                            <div class="message sender">
+                                <div class="content">
+                                    Lorem, ipsum dolor sit amet consectetur adipisicing elit. 
+                                </div>
+                                <div class="footer text-end p-1 text-muted">
+                                    <small> Sun 27 Feb, 2022</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-start">
+                            <div class="message reciever">
+                                <div class="content"> Lorem, ipsum dolor sit amet consectetur adipisicing elit. </div>
+                                <div class="footer text-end p-1 text-muted">
+                                    <small> Sun 27 Feb, 2022</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-form">
+                        <form action="/">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Type a message..." />
+                                <button class="btn btn-primary" type="button" id="button-addon2">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <%- include('./include/footer.ejs') %>  

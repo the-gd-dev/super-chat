@@ -1,0 +1,25 @@
+<%- include('../include/header.ejs') %>  
+</head>
+    <%- include('../include/navbar.ejs') %>  
+    <main>
+        <div class="container">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-md-4 bg-light mt-4">
+                    <form class="p-4" action="/reset" method="POST">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" name="email" class="form-control" id="email" placeholder="email@example.com">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Reset My Password</button>
+                    </form>
+                    <hr />
+                    <div class="d-flex flex-column justify-content-center align-items-center">
+                        <a class="d-block mb-2" href="/login">I want to try login again.</a>
+                        <a class="d-block mb-4" href="/register">New around here? Sign up</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+<%- include('../include/footer.ejs') %>  
