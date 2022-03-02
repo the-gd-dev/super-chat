@@ -1,9 +1,13 @@
 const { validationResult } = require("express-validator");
 const extractErrors = require("../helpers/extractErrors");
-const User = require("../models/user");
+const User = require("../models/User");
 const bcrypt = require("bcrypt");
+
 /**
  * showing login form
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
  * @response /auth/login
  */
 exports.getLogin = (req, res, next) => {
@@ -11,9 +15,11 @@ exports.getLogin = (req, res, next) => {
 };
 
 /**
- * loging in exisiting user resource
- * @params email, password, keep_me_in
- * @response /home
+ *  loging in exisiting user resource
+ * @param { body : { email, password, keep_me_in } } req
+ * @param {*} res
+ * @param {*} next
+ * @response /
  */
 exports.postLogin = (req, res, next) => {
   const errors = validationResult(req);
@@ -23,8 +29,10 @@ exports.postLogin = (req, res, next) => {
   }
   var email = req.body.email;
   var password = req.body.password;
+  var findUser;
   User.findOne({ email: email })
     .then((user) => {
+      findUser = user;
       return bcrypt.compare(password, user.password);
     })
     .then((result) => {
@@ -33,13 +41,19 @@ exports.postLogin = (req, res, next) => {
           errors: { email: { message: "User crendetials invalid." } },
         });
       }
-      res.redirect("/");
+      req.session.user = findUser;
+      req.session.save(() => {
+        res.redirect("/");
+      });
     })
     .catch((err) => console.log(err));
 };
 
 /**
  * showing registration form
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
  * @response /auth/register
  */
 exports.getRegister = (req, res, next) => {
@@ -48,8 +62,10 @@ exports.getRegister = (req, res, next) => {
 
 /**
  * registering the new user resource
- * @params email, password, keep_me_in
- * @response /home
+ * @param { body : { name, username, email, password, confirm_password } } req
+ * @param {*} res
+ * @param {*} next
+ * @response /
  */
 exports.postRegister = (req, res, next) => {
   const errors = validationResult(req);
@@ -80,6 +96,9 @@ exports.postRegister = (req, res, next) => {
 
 /**
  * showing reset password form
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
  * @response /auth/reset
  */
 exports.getResetPassword = (req, res, next) => {
@@ -87,11 +106,26 @@ exports.getResetPassword = (req, res, next) => {
 };
 
 /**
- * sending reset password email
- * @params email
- * @response /
+ * showing reset password form
+ * @param {body { email }} req
+ * @param {*} res
+ * @param {*} next
+ * @response /auth/new-password
  */
 exports.postResetPassword = (req, res, next) => {
   console.log(req.body);
   res.render("auth/reset");
+};
+
+/**
+ * showing reset password form
+ * @param {body { email }} req
+ * @param {*} res
+ * @param {*} next
+ * @response /auth/new-password
+ */
+exports.postLogout = (req, res, next) => {
+  req.session.destroy(() => {
+    res.redirect("/login");
+  });
 };

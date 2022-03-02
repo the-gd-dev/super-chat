@@ -1,7 +1,5 @@
 const { body } = require("express-validator");
 const customMessage = require("../../helpers/customMessage");
-const User = require("../../models/user");
-
 module.exports = [
   body("email")
     .trim()

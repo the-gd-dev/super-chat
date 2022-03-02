@@ -1,7 +1,9 @@
 /**
- * showing index page
- * @response /
+ * Render Index Page
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
  */
 exports.getIndex = (req, res, next) => {
-  res.render("index");
+  res.render("home/index");
 };
