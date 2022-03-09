@@ -32,19 +32,23 @@ exports.postLogin = (req, res, next) => {
   var findUser;
   User.findOne({ email: email })
     .then((user) => {
-      findUser = user;
-      return bcrypt.compare(password, user.password);
+      if (user) {
+        findUser = user;
+        return bcrypt.compare(password, user.password);
+      }
+      return null;
     })
     .then((result) => {
       if (!result) {
         res.render("auth/login", {
           errors: { email: { message: "User crendetials invalid." } },
         });
+      } else {
+        req.session.user = findUser;
+        req.session.save(() => {
+          res.redirect("/");
+        });
       }
-      req.session.user = findUser;
-      req.session.save(() => {
-        res.redirect("/");
-      });
     })
     .catch((err) => console.log(err));
 };
@@ -83,6 +87,7 @@ exports.postRegister = (req, res, next) => {
     .then((hashedPass) => {
       return User.create({
         name: req.body.name,
+        display_picture: "https://picsum.photos/200/300",
         username: req.body.username,
         email: req.body.email,
         password: hashedPass,

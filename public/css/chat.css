@@ -1,5 +1,16 @@
 .chat-user-list {
-  display: none;
+  /* display: none; */
+  transform: translateX(-300px);
+  opacity: 0;
+  position: absolute;
+  width: 50%;
+  height: 640px;
+  z-index: 10;
+  background: white;
+  transition: all 0.25s ease-in-out;
+}
+.overflow-hidden {
+  /* overflow: hidden; */
 }
 .chatbox {
   z-index: 1;
@@ -10,13 +21,13 @@
 }
 .chat-user {
   display: flex;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
 }
-.overlay-user-sidebar.show{
+.overlay-user-sidebar.show {
   display: block;
 }
-.overlay-user-sidebar{
+.overlay-user-sidebar {
   width: 100%;
   height: 640px;
   position: absolute;
@@ -27,27 +38,16 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.4);
   z-index: 5;
+  transition: all 0.25s ease-in-out;
 }
-.chat-user-list-mobile {
-  transform:translateX(-200px);
-  position: absolute;
-  width: 50%;
-  height: 640px;
-  z-index: 10;
-  background: white;
-}
-.chat-user-list-mobile .chat-user {
-  justify-content: start;
-}
-.chat-user-list-mobile .chat-user .profile-pic,
-.chat-user-list-mobile .chat-user .name,
-.chat-user-list-mobile .chat-user .last-message {
-  display: inline;
+.chat-user-list.show {
+  transform: translateX(0px);
+  opacity: 1;
 }
 .chat-user .profile-pic,
 .chat-user .name,
 .chat-user .last-message {
-  display: none;
+  /* display: none; */
 }
 .toggle-user-sidebar {
   border: none;
@@ -81,9 +81,19 @@
   background-color: #ebebeb;
   color: rgb(65, 65, 65);
 }
+.display_picture img,
 .profile-pic img {
   height: 100%;
   width: 100%;
+  object-fit: cover;
+}
+
+.display_picture {
+  height: 40px;
+  width: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+  margin: 0 8px;
 }
 .profile-pic {
   height: 45px;
@@ -105,17 +115,45 @@
   cursor: pointer;
   transition: all 0.25s ease-in-out;
 }
+div#message-wrapper {
+  scroll-behavior: smooth;
+  max-height: 500px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.messages {
+  display: flex;
+  flex-direction: column;
+  align-items: unset;
+  margin-top: auto;
+}
 /* // X-Small devices (portrait phones, less than 576px) */
 @media (min-width: 575.98px) {
+  .chat-user {
+    justify-content: center;
+  }
   .toggle-user-sidebar {
     display: none;
   }
   .chat-user-list {
     display: block;
+    transform: translateX(0px);
+    opacity: 1;
+    width: 100%;
+    position: relative;
+    height: 100%;
+    z-index: 10;
+    background: white;
   }
   .chat-user .profile-pic {
     display: inline;
   }
+  .chat-user .name,
+  .chat-user .last-message {
+    display: none;
+  }
+
   .message {
     max-width: 70%;
   }
@@ -125,6 +163,9 @@
 @media (min-width: 767.98px) {
   .chat-user .name {
     display: inline;
+  }
+  .chat-user .last-message {
+    display: none;
   }
   .message {
     max-width: 60%;
