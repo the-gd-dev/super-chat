@@ -29,7 +29,7 @@ socket.on("chat-message", function (data) {
   if (data.reciever === user && data.sender === reciever) {
     document.getElementById("message-wrapper").firstElementChild.innerHTML +=
       renderSingleMessage(user, data.message);
-      scrollToBottom();
+    scrollToBottom();
   }
 });
 
@@ -75,7 +75,6 @@ function renderSingleMessage(currentUser, message) {
         </div>
       </div>
     `;
- 
 }
 function messagesRendering(messages) {
   let user = document.getElementById("user_id").value;
@@ -110,7 +109,8 @@ function sendMessage(form) {
   })
     .then((result) => result.json())
     .then((res) => {
-      document.getElementById("message-wrapper").firstElementChild.innerHTML += renderSingleMessage(user, res.message);
+      document.getElementById("message-wrapper").firstElementChild.innerHTML +=
+        renderSingleMessage(user, res.message);
       scrollToBottom();
       socket.emit("chat-message", {
         message: res.message,
@@ -122,8 +122,22 @@ function sendMessage(form) {
     })
     .catch((err) => {});
 }
+function friendRender(user) {
+  let currentUser = document.getElementById("user_id").value;
+  return `<li class="chat-user" onclick="createConversation('${currentUser}', '${user._id}')">
+    <div class="d-flex flex-rows align-items-center">
+        <div class="profile-pic"><img src="${user.display_picture}" ></div>
+        <div class="d-flex flex-column ms-2"> 
+            <div class="name">
+            <strong class="text-dark"> ${user.name}</strong>
+            </div>
+            <div class="last-message text-muted text-sm"></div>
+        </div>
+    </div>
+  </li>`;
+}
 function personRendering(convo) {
-  return `<li class="chat-user" onclick="switchChat(this, '${convo.user._id}')">
+  return `<li class="chat-user convo-user" onclick="switchChat(this, '${convo.user._id}')">
             <div class="d-flex flex-rows align-items-center">
                 <div class="profile-pic"><img src="${convo.user.display_picture}" ></div>
                 <div class="d-flex flex-column ms-2"> 
@@ -135,22 +149,82 @@ function personRendering(convo) {
             </div>
         </li>`;
 }
+/**
+ * create converation
+ * @param {*} sender
+ * @param {*} reciever
+ */
+function createConversation(sender, receiver) {
+  fetch("/conversations", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ sender, receiver }),
+  })
+    .then((result) => result.json())
+    .then((res) => {
+      document.getElementById("chattingUsersList").innerHTML = "";
+      document.querySelector("#find-friends").value = "";
+      fetchConversation();
+    })
+    .catch((err) => {});
+}
 
-fetch("/conversations")
-  .then((response) => {
-    return response.json();
-  })
-  .then((result) => {
-    document.getElementById("chattingUsersList").innerHTML = "";
-    result.conversations.forEach((c) => {
-      document.getElementById("chattingUsersList").innerHTML +=
-        personRendering(c);
-    });
-    document.querySelector(".chat-user").click();
-  })
-  .catch((err) => {});
+document.querySelector("#find-friends").addEventListener("input", function (e) {
+  let htmlContent = document.getElementById("chattingUsersList").innerHTML;
+  if (e.target.value.trim()) {
+    fetch("/users?name=" + e.target.value)
+      .then((response) => {
+        return response.json();
+      })
+      .then((result) => {
+        document.getElementById("chattingUsersList").innerHTML = "";
+        result.users.forEach((c) => {
+          document.getElementById("chattingUsersList").innerHTML +=
+            friendRender(c);
+        });
+      })
+      .catch((err) => {});
+  } else {
+    document.getElementById("chattingUsersList").innerHTML = htmlContent;
+  }
+});
+var chatRooms = [];
+function fetchConversation() {
+  fetch("/conversations")
+    .then((response) => {
+      return response.json();
+    })
+    .then((result) => {
+      document.getElementById("chattingUsersList").innerHTML = "";
+      chatRooms = result.conversations;
+      result.conversations.forEach((c) => {
+        document.getElementById("chattingUsersList").innerHTML +=
+          personRendering(c);
+      });
+      document.querySelector(".convo-user").click();
+    })
+    .catch((err) => {});
+}
+fetchConversation();
+/**
+ * switch chat person
+ * @param {*} e
+ * @param {*} userId
+ */
 function switchChat(e, userId) {
-  let chatUsers = document.querySelectorAll(".chat-user");
+  let userData = chatRooms.find((cr) => cr.user._id === userId);
+
+  document.querySelector(".chat-header").querySelector(".name").innerHTML =
+    userData.user.name;
+  document
+    .querySelector(".chat-header")
+    .querySelector(".profile-pic")
+    .querySelector("img")
+    .setAttribute("src", userData.user.display_picture);
+  let chatUsers = document.querySelectorAll(".convo-user");
   chatUsers.forEach((elem) => elem.classList.remove("active"));
   e.classList.add("active");
   document.getElementById("message-wrapper").innerHTML = "";
