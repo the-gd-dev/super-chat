@@ -118,6 +118,7 @@
 div#message-wrapper {
   scroll-behavior: smooth;
   max-height: 500px;
+  overflow-x: hidden;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -168,7 +169,29 @@ div#message-wrapper {
     max-width: 70%;
   }
 }
+.slide-from-left  {
+  position: relative;
+  animation : slideLeftIn 1s ease-in-out;
+}
+.slide-from-right  {
+  position: relative;
+  animation : slideRightIn 1s ease-in-out;
+}
+@keyframes slideLeftIn {
+  0% { left : -10%; opacity: 0; }
+  20% {left : -8%; opacity: 0.2; }
+  40% {left : -5%; opacity: 0.5;}
+  80% {left : -3%; opacity: 0.8;}
+  100% {left : 0; opacity: 1;}
+}
 
+@keyframes slideRightIn {
+  0% { right : -10%; opacity: 0; }
+  20% {right : -8%; opacity: 0.2; }
+  40% {right : -5%; opacity: 0.5;}
+  80% {right : -3%; opacity: 0.8;}
+  100% {right : 0; opacity: 1;}
+}
 /* // Small devices (landscape phones, less than 768px) */
 @media (min-width: 767.98px) {
   .chat-user .name {

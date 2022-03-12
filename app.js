@@ -57,13 +57,17 @@ app.use(publicRoutes);
 app.use(authRoutes);
 io.on("connection", (socket) => {
   socket.on("connected", (payload) => {
-    users[payload.userId] = socket.id;
+    // console.log("connected--->socket.io--->", payload);
+    users[payload.currentUserId] = socket.id;
+    console.log("connected users--->", users);
   });
   socket.on("chat-message", (payload) => {
+    // console.log(payload);
     io.to(users[payload.sender]).emit("chat-message", payload);
     io.to(users[payload.reciever]).emit("chat-message", payload);
   });
   socket.on("disconnect", (payload = {}) => {
+    // console.log("disconnect--->socket.io--->", payload);
     if (users[payload.userId]) delete users[payload.userId];
   });
 });

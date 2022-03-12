@@ -65,7 +65,7 @@
                         <div class="input-group">
                             <input type="hidden" id="sender_id" value=""  />
                             <input type="hidden" id="user_id"   value="<%= user._id.toString() %>"/>
-                            <input type="text" class="form-control py-2" id="message" placeholder="Type a message..." />
+                            <input type="text" class="form-control py-2" id="message-input" placeholder="Type a message..." />
                             <button class="btn btn-primary"  id="button-addon2" onclick="sendMessage()">Send</button>
                         </div>
                     </div>
@@ -73,7 +73,15 @@
             </div>
         </div>
     </main>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" async></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js" async ></script>
+    <script>
+        var currentUserId = document.getElementById("user_id").value;
+        var $senderInput  = document.getElementById("sender_id");
+        var $messageContainer = document.getElementById("message-wrapper");
+        var $conversationContainer = document.getElementById("chattingUsersList");
+    </script>
+    <script src="/js/helpers.js"></script>
+    <script src="/js/socket.js"></script>
     <script src="/js/chat.js"></script>
     <%- include('../include/footer.ejs') %>  

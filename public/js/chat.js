@@ -1,11 +1,3 @@
-//catching event
-function formatDate(date) {
-  return moment(date).format("llll");
-}
-var socket = io();
-let userId = document.getElementById("user_id").value;
-socket.emit("connected", { userId });
-
 var initialLoaderRooms = ` 
     <li class="m-auto">
       <div>
@@ -23,27 +15,19 @@ var initialLoaderMessages = `
     <div class="d-block mt-2"><strong> Loading messges please wait....</strong></div>
   </div>`;
 
-socket.on("chat-message", function (data) {
-  let user = document.getElementById("user_id").value;
-  let reciever = document.getElementById("sender_id").value;
-  if (data.reciever === user && data.sender === reciever) {
-    document.getElementById("message-wrapper").firstElementChild.innerHTML +=
-      renderSingleMessage(user, data.message);
-    scrollToBottom();
-  }
-});
-
 let sideNavUser = document.querySelector(".chat-user-list");
 let sideNavUserOverlay = document.querySelector(".overlay-user-sidebar");
 sideNavUserOverlay.addEventListener("click", function () {
   sideNavUserOverlay.classList.remove("show");
   sideNavUser.classList.remove("show");
 });
-function showUserSideBar() {
-  sideNavUser.classList.toggle("show");
-  sideNavUserOverlay.classList.toggle("show");
-}
 
+/**
+ * render single message to container
+ * @param {*} currentUser
+ * @param {*} message
+ * @returns
+ */
 function renderSingleMessage(currentUser, message) {
   return currentUser === message.senderId._id
     ? `
@@ -61,7 +45,7 @@ function renderSingleMessage(currentUser, message) {
         </div>
       </div>`
     : `
-      <div class="d-flex justify-content-start message-wrapper">
+      <div class="d-flex justify-content-start">
         <div class="display_picture">
           <img src="${message.senderId.display_picture}" />
         </div>
@@ -76,27 +60,29 @@ function renderSingleMessage(currentUser, message) {
       </div>
     `;
 }
+
+/**
+ * render all messages to container
+ * @param {*} messages
+ * @returns
+ */
 function messagesRendering(messages) {
-  let user = document.getElementById("user_id").value;
   var appendHtml = `<div class="messages">`;
   messages.forEach(function (message) {
-    appendHtml += renderSingleMessage(user, message);
+    appendHtml += renderSingleMessage(currentUserId, message);
   });
   appendHtml += `</div>`;
   return appendHtml;
 }
-function scrollToBottom() {
-  var messageBody = document.getElementById("message-wrapper");
-  messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
-}
+
 /**
  * send message
- * @param {*} message
+ * @body { message , sender}
  */
-function sendMessage(form) {
-  let message = document.getElementById("message").value;
-  let sender = document.getElementById("sender_id").value;
-  let user = document.getElementById("user_id").value;
+function sendMessage() {
+  let $messageInput = document.getElementById("message-input");
+  let message = $messageInput.value;
+  let sender = $senderInput.value;
   if (!message) return alert("Please enter a message.");
 
   fetch("/messages/send", {
@@ -105,26 +91,36 @@ function sendMessage(form) {
       Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ message, sender_id: sender, user_id: user }),
+    body: JSON.stringify({
+      message,
+      sender_id: sender,
+      user_id: currentUserId,
+    }),
   })
     .then((result) => result.json())
     .then((res) => {
-      document.getElementById("message-wrapper").firstElementChild.innerHTML +=
-        renderSingleMessage(user, res.message);
-      scrollToBottom();
       socket.emit("chat-message", {
         message: res.message,
-        sender: user,
+        sender: currentUserId,
         reciever: sender,
-      }); //emitting
-      // document.getElementById("message-wrapper").firstElementChild.innerHTML += renderSingleMessage(user, res.message);
-      document.getElementById("message").value = "";
+      });
+      $messageContainer.firstElementChild.innerHTML += renderSingleMessage(
+        currentUserId,
+        res.message
+      );
+      $messageInput.value = "";
+      scrollToBottom();
     })
     .catch((err) => {});
 }
+
+/**
+ * render single friend
+ * @param {*} user
+ * @returns
+ */
 function friendRender(user) {
-  let currentUser = document.getElementById("user_id").value;
-  return `<li class="chat-user" onclick="createConversation('${currentUser}', '${user._id}')">
+  return `<li class="chat-user" onclick="createConversation('${currentUserId}', '${user._id}')">
     <div class="d-flex flex-rows align-items-center">
         <div class="profile-pic"><img src="${user.display_picture}" ></div>
         <div class="d-flex flex-column ms-2"> 
@@ -136,6 +132,12 @@ function friendRender(user) {
     </div>
   </li>`;
 }
+
+/**
+ * render single conversation
+ * @param {*} convo
+ * @returns
+ */
 function personRendering(convo) {
   return `<li class="chat-user convo-user" onclick="switchChat(this, '${convo.user._id}')">
             <div class="d-flex flex-rows align-items-center">
@@ -149,6 +151,7 @@ function personRendering(convo) {
             </div>
         </li>`;
 }
+
 /**
  * create converation
  * @param {*} sender
@@ -165,7 +168,7 @@ function createConversation(sender, receiver) {
   })
     .then((result) => result.json())
     .then((res) => {
-      document.getElementById("chattingUsersList").innerHTML = "";
+      $conversationContainer.innerHTML = "";
       document.querySelector("#find-friends").value = "";
       fetchConversation();
     })
@@ -173,24 +176,27 @@ function createConversation(sender, receiver) {
 }
 
 document.querySelector("#find-friends").addEventListener("input", function (e) {
-  let htmlContent = document.getElementById("chattingUsersList").innerHTML;
+  let htmlContent = $conversationContainer.innerHTML;
   if (e.target.value.trim()) {
     fetch("/users?name=" + e.target.value)
       .then((response) => {
         return response.json();
       })
       .then((result) => {
-        document.getElementById("chattingUsersList").innerHTML = "";
+        $conversationContainer.innerHTML = "";
         result.users.forEach((c) => {
-          document.getElementById("chattingUsersList").innerHTML +=
-            friendRender(c);
+          $conversationContainer.innerHTML += friendRender(c);
         });
       })
       .catch((err) => {});
   } else {
-    document.getElementById("chattingUsersList").innerHTML = htmlContent;
+    $conversationContainer.innerHTML = htmlContent;
   }
 });
+
+/**
+ * fetch all conversations
+ */
 var chatRooms = [];
 function fetchConversation() {
   fetch("/conversations")
@@ -198,17 +204,17 @@ function fetchConversation() {
       return response.json();
     })
     .then((result) => {
-      document.getElementById("chattingUsersList").innerHTML = "";
+      $conversationContainer.innerHTML = "";
       chatRooms = result.conversations;
       result.conversations.forEach((c) => {
-        document.getElementById("chattingUsersList").innerHTML +=
-          personRendering(c);
+        $conversationContainer.innerHTML += personRendering(c);
       });
       document.querySelector(".convo-user").click();
     })
     .catch((err) => {});
 }
 fetchConversation();
+
 /**
  * switch chat person
  * @param {*} e
@@ -227,17 +233,15 @@ function switchChat(e, userId) {
   let chatUsers = document.querySelectorAll(".convo-user");
   chatUsers.forEach((elem) => elem.classList.remove("active"));
   e.classList.add("active");
-  document.getElementById("message-wrapper").innerHTML = "";
-  document.getElementById("sender_id").value = userId;
-  document.getElementById("message-wrapper").innerHTML = initialLoaderMessages;
+  $messageContainer.innerHTML = "";
+  $senderInput.value = userId;
+  $messageContainer.innerHTML = initialLoaderMessages;
   fetch("/messages?user=" + userId)
     .then((response) => {
       return response.json();
     })
     .then((result) => {
-      document.getElementById("message-wrapper").innerHTML = messagesRendering(
-        result.messages
-      );
+      $messageContainer.innerHTML = messagesRendering(result.messages);
       scrollToBottom();
     })
     .catch((err) => {});
