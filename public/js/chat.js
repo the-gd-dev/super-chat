@@ -100,7 +100,7 @@ function sendMessage() {
     .then((result) => result.json())
     .then((res) => {
       socket.emit("chat-message", {
-        message: res.message,
+        ...res.message,
         sender: currentUserId,
         reciever: sender,
       });
@@ -139,14 +139,22 @@ function friendRender(user) {
  * @returns
  */
 function personRendering(convo) {
-  return `<li class="chat-user convo-user" onclick="switchChat(this, '${convo.user._id}')">
+  return `<li class="chat-user convo-user"  onclick="switchChat(this, '${
+    convo.user._id
+  }')">
             <div class="d-flex flex-rows align-items-center">
-                <div class="profile-pic"><img src="${convo.user.display_picture}" ></div>
+                <div class="profile-pic"><img src="${
+                  convo.user.display_picture
+                }" ></div>
                 <div class="d-flex flex-column ms-2"> 
                     <div class="name">
-                    <strong class="text-dark"> ${convo.user.name}</strong>
+                      <strong class="text-dark"> ${convo.user.name}</strong>
                     </div>
-                    <div class="last-message text-muted text-sm"></div>
+                    <div id="last__msg__${
+                      convo.conversation_id
+                    }" class="last-message text-muted text-sm ${
+    convo.isLastMessageRead ? "unread__convo" : ""
+  }">${convo.lastMessage}</div>
                 </div>
             </div>
         </li>`;
@@ -241,8 +249,18 @@ function switchChat(e, userId) {
       return response.json();
     })
     .then((result) => {
-      $messageContainer.innerHTML = messagesRendering(result.messages);
-      scrollToBottom();
+      if (result.messages.length > 0) {
+        let Ids = result.messages
+          .filter((m) => m.isRead === true)
+          .map((m) => m._id);
+        let conversationId = result.messages[0].conversationId;
+        document
+          .getElementById(`last__msg__${conversationId}`)
+          .classList.remove("unread__convo");
+        readBulkMessages(Ids);
+        $messageContainer.innerHTML = messagesRendering(result.messages);
+        scrollToBottom();
+      }
     })
     .catch((err) => {});
 }

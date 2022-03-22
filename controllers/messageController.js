@@ -5,6 +5,25 @@ const Conversation = require("../models/Conversation");
 const Message = require("../models/Message");
 const app = express();
 /**
+ * read all messages at once
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+exports.readMessages = (req, res, next) => {
+  let messageIds = req.body.messageIds;
+  Message.find({ _id: { $in: messageIds } })
+    .update({
+      isRead: false,
+    })
+    .then((result) => {
+      return res.status(200).json({ msg: "messages read." });
+    })
+    .catch((err) => {
+      return res.status(500).json({ msg: "error.", errors: err });
+    });
+};
+/**
  * sending message to another user
  * @param {*} req
  * @param {*} res
@@ -19,6 +38,8 @@ exports.sendMessage = (req, res, next) => {
   let sender = req.session.user._id.toString();
   let reciever = req.body.sender_id;
   let conversationObj = { sender: sender, reciever: reciever };
+  var createdMessageId;
+  var convoId;
   Conversation.findOne({ members: { $all: [sender, reciever] } })
     .then((result) => {
       if (result) {
@@ -28,18 +49,28 @@ exports.sendMessage = (req, res, next) => {
       }
     })
     .then((convo) => {
+      convoId = convo._id;
       return Message.create({
         message: req.body.message,
         conversationId: convo._id,
         senderId: conversationObj.sender,
+        isRead: true,
       });
     })
-    .then((msg) => {
-      return Message.findById(msg._id)
-        .populate({ path: "senderId", select: "display_picture" })
+    .then((message) => {
+      createdMessageId = message._id;
+      //updating last message to conversation
+      return Conversation.findById(convoId).updateOne({
+        lastMessage: message._id,
+      });
+    })
+    .then((result) => {
+      return Message.findById(createdMessageId)
+        .populate({ path: "senderId", select: ["_id", "display_picture"] })
         .exec();
     })
     .then((message) => {
+      //returning the final response to user
       res.status(200).json({
         message: message,
         msg: "Message has been sent!!",

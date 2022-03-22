@@ -21,6 +21,7 @@ exports.getConversations = (req, res, next) => {
   var currentLoggedInUserId = req.session.user._id;
   Conversation.find({ members: { $in: [currentLoggedInUserId] } })
     .populate({ path: "members", select: ["name", "display_picture"] })
+    .populate({path : "lastMessage", select : ["message", "isRead"]})
     .exec()
     .then((convos) => {
       let finalConvos = [];
@@ -31,11 +32,15 @@ exports.getConversations = (req, res, next) => {
           finalConvos.push({
             conversation_id: con._id,
             user: member1,
+            isLastMessageRead : con?.lastMessage?.isRead || false,
+            lastMessage: con?.lastMessage?.message || "",
           });
         } else {
           finalConvos.push({
             conversation_id: con._id,
             user: member2,
+            isLastMessageRead : con?.lastMessage?.isRead || false,
+            lastMessage: con?.lastMessage?.message || "",
           });
         }
       });

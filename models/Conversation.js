@@ -6,6 +6,7 @@ const conversionSchema = new Schema(
       { type: Schema.Types.ObjectId, ref: "User", required: true },
       { type: Schema.Types.ObjectId, ref: "User", required: true },
     ],
+    lastMessage: { type: Schema.Types.ObjectId, ref: "Message" },
   },
   { timestamps: true }
 );
