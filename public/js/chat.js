@@ -99,17 +99,17 @@ function sendMessage() {
   })
     .then((result) => result.json())
     .then((res) => {
-      socket.emit("chat-message", {
-        message: res.message,
-        sender: currentUserId,
-        reciever: sender,
-      });
       $messageContainer.firstElementChild.innerHTML += renderSingleMessage(
         currentUserId,
         res.message
       );
       $messageInput.value = "";
       scrollToBottom();
+      socket.emit("chat-message", {
+        message: res.message,
+        sender: currentUserId,
+        reciever: sender,
+      });
     })
     .catch((err) => {});
 }
