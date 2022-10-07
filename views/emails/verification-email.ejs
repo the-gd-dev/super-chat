@@ -1,0 +1,43 @@
+<body style="padding:0;margin:0;">
+    <div
+        style="
+          font-family: Calibri, sans-serif;
+          padding: 10px 0;
+          text-align: center;
+          color: whitesmoke;
+          font-size: 26px;
+          font-weight: 900;
+          background-color: #0d6efd;
+        "
+      >
+        SUPER CHAT
+      </div>
+      <div
+        style=" 
+          color:#393939;
+          display: flex;
+          width: 100%;
+          height: 100%;
+          padding: 10px 8px;
+          justify-content: center;
+          align-items: center;
+          flex-direction: column;
+        "
+      >
+        <div style="font-family: Calibri, sans-serif">
+          <h3>Hi <%= userName %></h3>
+          <p>Your verification code is</p>
+          <span style="color: #73abff;font-weight:bold;font-size:2rem;"> <%= verificationCode %></span>
+          <p>
+            Enter this code to activate your superchat account. <br>
+            <a style="display:inline-block;color: #0d6efd;" href="<%= baseURL+'/verify-me/'+userEmail %>">Click here </a>
+            to open the code verification page. <br> 
+            If you have any questions, send us an email <b>support-superchat@superchat.io</b>.
+          </p>
+          <p>
+            <h3 style="color:#00b966;margin:0;padding:0;">We’re glad you’re here!</h3>
+            <h2 style="color:#0d6efd;margin:0;padding:0;">The superchat team</h2>
+          </p>
+        </div>
+      </div>
+</body>

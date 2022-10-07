@@ -55,6 +55,9 @@ var rooms = {};
 //routes & middlewares
 app.use(publicRoutes);
 app.use(authRoutes);
+app.use(function(req, res, next){
+  res.render('errors/404');
+})
 io.on("connection", (socket) => {
   socket.on("connected", (payload) => {
     // console.log("connected--->socket.io--->", payload);

@@ -8,7 +8,10 @@
                     <form class="p-4" action="/reset" method="POST">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email address</label>
-                            <input type="email" name="email" class="form-control" id="email" placeholder="email@example.com">
+                            <input type="email" name="email" class="form-control <% if(resetError) { %> is-invalid <% } %>" id="email" placeholder="email@example.com">
+                            <% if(resetError){ %> 
+                                <div class="is-invalid"><%= resetErrorMessage %></div>
+                            <% } %> 
                         </div>
                         
                         <button type="submit" class="btn btn-primary">Reset My Password</button>

@@ -8,11 +8,16 @@ const {
   postLogin,
   getResetPassword,
   postResetPassword,
-  postLogout
+  postLogout,
+  getVerifyPage,
+  postVerifyUserData,
+  getSetPassword,
+  postSetPassword,
 } = require("../controllers/authController");
 
 //validations
 const registerationRules = require("../validations/auth/register");
+const setPassRules = require("../validations/auth/setPassword");
 const loginRules = require("../validations/auth/login");
 const guestMiddleware = require("../middlewares/guestMiddleware");
 //validations
@@ -29,8 +34,11 @@ router.post("/register", registerationRules, postRegister);
 //reset
 router.get("/reset", guestMiddleware, getResetPassword);
 router.post("/reset", postResetPassword);
-//set password
-// router.get("/set-password/:token", getResetPassword);
-// router.post("/set-password", postResetPassword);
+// set password
+router.get("/verify-me/:email", getVerifyPage);
+router.post("/verify", postVerifyUserData);
+// set password
+router.get("/set-password/:token",  getSetPassword);
+router.post("/set-password", setPassRules, postSetPassword);
 
 module.exports = router;

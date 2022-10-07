@@ -1,0 +1,67 @@
+<%- include('../include/header.ejs') %>
+<style>
+    input.is-error:focus {
+      border-color: crimson;
+      box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.313);
+    }
+  input.is-error  {
+    border-color: crimson;
+    outline-color: crimson !important;
+  }
+</style>  
+</head>
+    <%- include('../include/navbar.ejs') %>  
+    <main>
+        <div class="container">
+            <div class="row justify-content-center align-items-center">
+                <div class="col-md-4 bg-light mt-4">
+                    <form class="p-5" action="/verify" method="POST">
+                        <div class="mb-4">
+                            <label for="email" class="form-label mb-3">
+                              Verification Code
+                              <br>
+                              <small class="text-primary">Please check your email.</small>
+                            </label>
+                            <div class="d-flex gap-2 verification-code-inputs">
+                              <input type="hidden" name="email" value="<%= userEmail %>">
+                              <input type="text" maxlength="1" minlength="1" required oninput="onCodeInput(this, 'code-2')" name="code" value="<%= code[0] %>" class="form-control code-input <% if(verificationCodeError){ %>is-error <% } %>"  onfocus="onFocusCodeField(this)" />
+                              <input type="text" maxlength="1" minlength="1" required id="code-2" oninput="onCodeInput(this, 'code-3')" name="code" value="<%= code[1] %>" class="form-control code-input <% if(verificationCodeError){ %>is-error <% } %>"  onfocus="onFocusCodeField(this)" />
+                              <input type="text" maxlength="1" minlength="1" required id="code-3" oninput="onCodeInput(this, 'code-4')"  name="code" value="<%= code[2] %>" class="form-control code-input <% if(verificationCodeError){ %>is-error <% } %>" onfocus="onFocusCodeField(this)" />
+                              <input type="text" maxlength="1" minlength="1" required id="code-4" oninput="onCodeInput(this, 'code-5')" name="code" value="<%= code[3] %>" class="form-control code-input <% if(verificationCodeError){ %>is-error <% } %>" onfocus="onFocusCodeField(this)" />
+                              <input type="text" maxlength="1" minlength="1" required id="code-5" oninput="onCodeInput(this, 'code-6')" name="code" value="<%= code[4] %>" class="form-control code-input <% if(verificationCodeError){ %>is-error <% } %>" onfocus="onFocusCodeField(this)" />
+                              <input type="text" maxlength="1" minlength="1" required id="code-6" oninput="onCodeInput(this)" name="code" value="<%= code[5] %>" class="form-control code-input <% if(verificationCodeError){ %>is-error <% } %>"  onfocus="onFocusCodeField(this)" />
+                            </div>
+                            <% if(verificationCodeError){ %>
+                              <div class="text-danger text-lg" id="error-message"><%= verificationErrMsg %> </div>
+                            <%} %>
+                            
+                         </div>
+                        
+                        <button type="submit" class="btn btn-primary">Verify Code</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script> 
+          function onFocusCodeField(elem){
+            elem.value = '';
+            document.querySelectorAll('.code-input').forEach(function(elem){
+                  elem.classList.remove('is-error')
+                })
+            document.getElementById('error-message').innerHTML = ''
+          }
+          function onCodeInput(e, inputId){
+              if(isNaN(parseInt(e.value))){
+                e.value = '';
+              }else{
+                document.querySelectorAll('.code-input').forEach(function(elem){
+                  elem.blur()
+                })
+                if(inputId){
+                  document.getElementById(inputId).focus()
+                }
+              }
+          }
+        </script>
+    </main>
+<%- include('../include/footer.ejs') %>  

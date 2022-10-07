@@ -9,6 +9,11 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  verificationCode: String,
+  isVerfied: {
+    type: Boolean,
+    default: false,
+  },
   email: {
     type: String,
     required: true,

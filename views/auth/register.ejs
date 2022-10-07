@@ -8,35 +8,35 @@
                 <form class="px-4 py-3" action="/register" method="POST">
                     <div class="mb-3">
                       <label for="fullName" class="form-label">Full Name <strong class="text-danger text-md">*</strong></label>
-                      <input value="<% if(errors && errors['name']){ %><%= errors['name'].oldValue %><%}%>" type="text" class="form-control <% if(errors && errors['name']){ %> is-invalid <% } %>" name="name" id="fullName" placeholder="FirstName LastName" />
+                      <input value="<% if(errors && errors['name']){ %><%= errors['name'].oldValue %><%}%>" type="text" class="form-control <% if(errors && errors['name']){ %> is-invalid <% } %>" name="name" id="fullName"  />
                       <% if(errors && errors['name']){ %> 
                         <div class="is-invalid"><%= errors['name'].message %></div>
                       <% } %> 
                     </div>
                     <div class="mb-3">
                       <label for="fullName" class="form-label">Username</label>
-                      <input value="<%if(errors && errors['username']){%><%=errors['username'].oldValue%><%}%>" type="text" class="form-control <% if(errors && errors['username']){ %> is-invalid <% } %>" name="username" id="fullName" placeholder="Username">
+                      <input value="<%if(errors && errors['username']){%><%=errors['username'].oldValue%><%}%>" type="text" class="form-control <% if(errors && errors['username']){ %> is-invalid <% } %>" name="username" id="fullName" >
                       <% if(errors && errors['username']){ %> 
                         <div class="is-invalid"><%= errors['username'].message %></div>
                       <% } %> 
                     </div>
                     <div class="mb-3">
                       <label for="exampleDropdownFormEmail1" class="form-label">Email address <strong class="text-danger text-md">*</strong></label>
-                      <input value="<% if(errors && errors['email']){ %> <%= errors['email'].oldValue %> <% } %>" type="email" class="form-control <% if(errors && errors['email']){ %> is-invalid <% } %>" name="email" id="exampleDropdownFormEmail1" placeholder="email@example.com">
+                      <input value="<% if(errors && errors['email']){ %> <%= errors['email'].oldValue %> <% } %>" type="email" class="form-control <% if(errors && errors['email']){ %> is-invalid <% } %>" name="email" id="exampleDropdownFormEmail1">
                       <% if(errors && errors['email']){ %> 
                         <div class="is-invalid"><%= errors['email'].message %></div>
                       <% } %> 
                     </div>
                     <div class="mb-3">
                       <label for="password" class="form-label">Password <strong class="text-danger text-md">*</strong></label>
-                      <input type="password" class="form-control <% if(errors && errors['name']){ %> is-invalid <% } %>" name="password" id="password" placeholder="Password">
+                      <input type="password" class="form-control <% if(errors && errors['name']){ %> is-invalid <% } %>" name="password" id="password" >
                       <% if(errors && errors['password']){ %> 
                         <div class="is-invalid"><%= errors['password'].message %></div>
                       <% } %> 
                     </div>
                     <div class="mb-3">
                       <label for="confirmPassword" class="form-label">Confirm Password <strong class="text-danger text-md">*</strong></label>
-                      <input  type="password" class="form-control" name="confirm_password" id="confirmPassword" placeholder="Password" />
+                      <input  type="password" class="form-control" name="confirm_password" id="confirmPassword"  />
                     </div>
                     <button type="submit" class="btn btn-primary">Sign Up</button>
                 </form>
