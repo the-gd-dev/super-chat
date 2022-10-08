@@ -1,16 +1,9 @@
 const { validationResult } = require("express-validator");
 const extractErrors = require("../helpers/extractErrors");
 const User = require("../models/User");
-
-const bcrypt = require("bcrypt");
-const mailSender = require("../helpers/mailSender");
-const ejs = require("ejs");
-const fs = require("fs");
-const { basePath } = require("../paths");
-const generateCode = require("../helpers/generateCode");
-const { baseURL } = require("../config/config");
-const resetLinkGenerator = require("../helpers/resetLinkGenerator");
-const ChangePasswordRequest = require("../models/ChangePasswordRequest");
+const userToken = require("../helpers/userToken");
+const userPassword = require("../helpers/userPassword");
+const userRegisteration = require("../helpers/userRegisteration");
 /**
  * showing login form
  * @param {*} req
@@ -29,7 +22,7 @@ exports.getLogin = (req, res, next) => {
  * @param {*} next
  * @response /
  */
-exports.postLogin = (req, res, next) => {
+exports.postLogin = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     let extractErrorsArr = extractErrors(errors.array());
@@ -37,28 +30,19 @@ exports.postLogin = (req, res, next) => {
   }
   var email = req.body.email;
   var password = req.body.password;
-  var findUser;
-  User.findOne({ email: email })
-    .then((user) => {
-      if (user) {
-        findUser = user;
-        return bcrypt.compare(password, user.password);
-      }
-      return null;
-    })
-    .then((result) => {
-      if (!result) {
-        res.render("auth/login", {
-          errors: { email: { message: "User crendetials invalid." } },
-        });
-      } else {
-        req.session.user = findUser;
-        req.session.save(() => {
-          res.redirect("/");
-        });
-      }
-    })
-    .catch((err) => console.log(err));
+  var findUser = await User.findOne({ email: email });
+  var userPasswordInstance = new userPassword(findUser.id, password);
+  var result = await userPasswordInstance.matchUserPassword();
+  if (!result) {
+    res.render("auth/login", {
+      errors: { email: { message: "User crendetials invalid." } },
+    });
+  } else {
+    req.session.user = findUser;
+    req.session.save(() => {
+      res.redirect("/");
+    });
+  }
 };
 
 /**
@@ -79,54 +63,21 @@ exports.getRegister = (req, res, next) => {
  * @param {*} next
  * @response /
  */
-exports.postRegister = (req, res, next) => {
+exports.postRegister = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     let extractErrorsArr = extractErrors(errors.array());
     return res.render("auth/register", { errors: extractErrorsArr });
   }
-  const verificationCode = generateCode();
-  User.findOne({ email: req.body.email })
-    .then((user) => {
-      if (user) {
-        res.render("auth/register", {
-          errors: {
-            email: "User already exist to the provided email address.",
-          },
-        });
-      }
-      return bcrypt.hash(req.body.password, 12);
-    })
-    .then((hashedPass) => {
-      return User.create({
-        verificationCode,
-        name: req.body.name,
-        display_picture: "https://picsum.photos/200/300",
-        username: req.body.username,
-        email: req.body.email,
-        password: hashedPass,
-      });
-    })
-    .then((user) => {
-      const subject = "Verify Your Email Address | Super Chat";
-      const templateData = {
-        userName: user.name,
-        userEmail: user.email,
-        baseURL: baseURL,
-        verificationCode: verificationCode,
-      };
-      const mailInstance = new mailSender(
-        user.email,
-        subject,
-        "verification-email",
-        templateData
-      );
-      mailInstance.send();
-      res.redirect("/verify-me/" + req.body.email);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  const { name, username, email, password } = req.body;
+  //User Registeration Process
+  const newUser = new userRegisteration(name, email, password, username);
+  let isUserExistResult = await newUser.isUserExistsAlready();
+  if (isUserExistResult !== false) {
+    res.render("auth/register", isUserExistResult);
+  }
+  var isRegistered = await newUser.register();
+  res.redirect("/verify-me/" + req.body.email);
 };
 
 /**
@@ -204,6 +155,7 @@ exports.getResetPassword = (req, res, next) => {
  */
 exports.postResetPassword = async (req, res, next) => {
   const userEmail = req.body.email;
+  const userPasswordInstance = new userPassword(userEmail, "");
   function returnBackWithMessage(msg) {
     res.render("auth/reset", {
       resetError: true,
@@ -213,23 +165,11 @@ exports.postResetPassword = async (req, res, next) => {
   if (!userEmail) {
     returnBackWithMessage("Email Address is required.");
   } else {
-    let userData = await User.findOne({ email: userEmail });
+    let userData = await userPasswordInstance.getUserByEmail();
     if (!userData) {
       returnBackWithMessage("Email Address not found.");
     } else {
-      const subject = "Password Change Request | Super Chat";
-      const resetLink = await resetLinkGenerator(userData.id);
-      const templateData = {
-        resetLink,
-        userName: userData.name,
-      };
-      const mailInstance = new mailSender(
-        userData.email,
-        subject,
-        "forgot-password",
-        templateData
-      );
-      mailInstance.send();
+      await userPasswordInstance.sendForgotPasswordEmail();
       return res.redirect("/login");
     }
   }
@@ -245,15 +185,10 @@ exports.postResetPassword = async (req, res, next) => {
 exports.getSetPassword = async (req, res, next) => {
   const token = req.params.token;
   const userId = req.query.userId;
-  const password_token = await ChangePasswordRequest.findOne({ userId, token });
-  const currentTime = new Date().getTime();
-  var errors = {};
+  const userTokenInstance = new userToken(userId, token);
+  var errors = await userTokenInstance.validateToken();
   if (req.query.errors) {
     errors = JSON.parse(req.query.errors);
-  } else if (!password_token) {
-    errors = { token: { message: "Token or User is invalid." } };
-  } else if (currentTime > parseInt(password_token.expiresIn)) {
-    errors = { token: { message: "Provided token is expired." } };
   }
   res.render("auth/set-password", { token, userId, errors });
 };
@@ -270,11 +205,12 @@ exports.postSetPassword = async (req, res, next) => {
   const userId = req.body.userId;
   const password = req.body.password;
   const newPassword = req.body.new_password;
-  const password_token = await ChangePasswordRequest.findOne({ userId, token });
-  const currentTime = new Date().getTime();
-  if (!password_token) {
-    errors = { token: { message: "Token or User is invalid." } };
-    res.redirect(
+  const userTokenInstance = new userToken(userId, token);
+  const userOldPasswordInstance = new userPassword(userId, password);
+  const userNewPasswordInstance = new userPassword(userId, newPassword);
+  var token_errors = await userTokenInstance.validateToken();
+  function sendBackToSetPasswordPage(errors) {
+    return res.redirect(
       "/set-password/" +
         token +
         "?userId=" +
@@ -282,70 +218,27 @@ exports.postSetPassword = async (req, res, next) => {
         "&errors=" +
         JSON.stringify(errors)
     );
-  } else if (currentTime > parseInt(password_token.expiresIn)) {
-    console.log("time is greateer then the token tme");
-    errors = { token: { message: "Provided token is expired." } };
-    res.redirect(
-      "/set-password/" +
-        token +
-        "?userId=" +
-        userId +
-        "&errors=" +
-        JSON.stringify(errors)
-    );
+  }
+  if (token_errors) {
+    return sendBackToSetPasswordPage(token_errors);
   } else if (!errors.isEmpty()) {
     let extractErrorsArr = extractErrors(errors.array());
-    res.redirect(
-      "/set-password/" +
-        token +
-        "?userId=" +
-        userId +
-        "&errors=" +
-        JSON.stringify(extractErrorsArr)
-    );
+    return sendBackToSetPasswordPage(extractErrorsArr);
   } else {
-    const userData = await User.findOne({ id: userId });
-    const isPasswordMatched = await bcrypt.compare(password, userData.password);
-    const isNewPasswordMatched = await bcrypt.compare(newPassword, userData.password);
-    if (!isPasswordMatched) {
-      res.redirect(
-        "/set-password/" +
-          token +
-          "?userId=" +
-          userId +
-          "&errors=" +
-          JSON.stringify({
-            password: { message: "Password not matched.", oldValue: "" },
-          })
-      );
-    } else if(isNewPasswordMatched){
-      res.redirect(
-        "/set-password/" +
-          token +
-          "?userId=" +
-          userId +
-          "&errors=" +
-          JSON.stringify({
-            new_password: { message: "Choose a different password.", oldValue: "" },
-          })
-      );
-    }else {
-      const hashedPassword = await bcrypt.hash(newPassword, 12);
-      await User.findOne({ id: userId }).update({
-        password: hashedPassword,
-      });
-      await ChangePasswordRequest.find({ userId }).deleteMany();
-      const subject = "Password Changed | Super Chat";
-      const mailInstance = new mailSender(
-        userData.email,
-        subject,
-        "password-changed",
-        {
-          baseURL,
-          userName: userData.name,
-        }
-      );
-      mailInstance.send();
+    if (!(await userOldPasswordInstance.matchUserPassword())) {
+      const oldPassErrors = {
+        password: { message: "Password not matched.", oldValue: "" },
+      };
+      return sendBackToSetPasswordPage(oldPassErrors);
+    } else if (await userNewPasswordInstance.matchUserPassword()) {
+      const newPassErrors = {
+        new_password: { message: "Choose a different password.", oldValue: "" },
+      };
+      return sendBackToSetPasswordPage(newPassErrors);
+    } else {
+      await userNewPasswordInstance.updateUserPassword();
+      await userTokenInstance.deleteToken();
+      await userNewPasswordInstance.sendPasswordResetEmail();
       return res.redirect("/login");
     }
   }

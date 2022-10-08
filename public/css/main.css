@@ -26,4 +26,19 @@ div.is-invalid {
 .verification-code-inputs input[type=number] {
   -moz-appearance: textfield;
 }
-
+.navbar-brand{
+  justify-content: center;
+  align-items: center;
+  column-gap: 8px;
+}
+.logo.light{
+  background-color: white;
+  color: #0d6efd;
+}
+.logo{
+  border:white solid 1px;
+  border-radius: 6px;
+  padding: 0px 5px;
+  font-weight: 900;
+  font-size: 1.5rem !important;
+}

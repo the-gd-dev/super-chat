@@ -36,6 +36,9 @@ class mailSender {
       text: this.text || "",
       html: htmlString,
     });
+    return {
+      message : 'mail sent!'
+    }
   }
 }
 module.exports  = mailSender;
