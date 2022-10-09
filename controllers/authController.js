@@ -33,9 +33,13 @@ exports.postLogin = async (req, res, next) => {
   var findUser = await User.findOne({ email: email });
   var userPasswordInstance = new userPassword(findUser.id, password);
   var result = await userPasswordInstance.matchUserPassword();
-  if (!result) {
+  if (!findUser || !result) {
     res.render("auth/login", {
       errors: { email: { message: "User crendetials invalid." } },
+    });
+  } if (!findUser.isVerfied) {
+    res.render("auth/login", {
+      errors: { email: { message: "User verfication pending. Kindly check your email." } },
     });
   } else {
     req.session.user = findUser;
