@@ -13,7 +13,7 @@ const app = express();
 exports.readMessages = (req, res, next) => {
   let messageIds = req.body.messageIds;
   Message.find({ _id: { $in: messageIds } })
-    .update({
+    .updateMany({
       isRead: false,
     })
     .then((result) => {
